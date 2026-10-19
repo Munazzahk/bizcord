@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/presence-microservice/" />
+  <Folder Name="/apps/presence-microservice/src/">
+    <Project Path="apps/presence-microservice/src/PresenceMicroservice.csproj" />
+  </Folder>
+  <Folder Name="/packages/">
+    <Project Path="packages/MessageClient/MessageClient.csproj" />
+    <Project Path="packages/Shared.Contracts/Shared.Contracts.csproj" />
+  </Folder>
+</Solution>
