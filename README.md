@@ -2,15 +2,15 @@
 
 ## Overview
 
-The Presence Microservice tracks when a user was last active. It consumes `MessagePostedEvent` messages from RabbitMQ, updates the user's last activity timestamp, and publishes a `PresenceUpdatedEvent`.
+The Presence Microservice tracks when a user was last active. It consumes `MessagePostedEvent` messages from RabbitMQ, updates the author's last-active timestamp, and publishes a `PresenceUpdatedEvent`.
 
 ## Architecture
 
 - **PresenceMicroservice:** REST API and background event consumer.
 - **Shared.Contracts:** Shared event definitions.
-- **MessageClient:** Abstraction and RabbitMQ implementation for messaging.
+- **MessageClient:** Messaging abstraction and RabbitMQ implementation.
 - **RabbitMQ:** Message broker for asynchronous communication.
-- **Docker Compose:** Runs the service and RabbitMQ locally.
+- **Docker Compose:** Starts the service and RabbitMQ.
 
 ## Requirements
 
@@ -20,38 +20,46 @@ The Presence Microservice tracks when a user was last active. It consumes `Messa
 
 ## Run the application
 
-From the repository root:
+Run these commands from the repository root:
 
 ```powershell
 docker compose up -d --build
-
-Check the running containers:
- ```powershell
 docker compose ps
+```
 
-Check the running containers:>>
- ```powershell
- docker compose down
+To stop the application:
 
-API
-Health check
-GET http://localhost:5001/health
+```powershell
+docker compose down
+```
+
+## API
+
+### Health check
+
+`GET http://localhost:5001/health`
 
 Returns the service health status.
-Get user presence
-GET http://localhost:5001/api/presence/{userId}
 
-Returns the user's last activity timestamp if the user has been processed. Returns HTTP 404 if no activity is known for that user.
-Events
-MessagePostedEvent
-Contains the message ID, channel ID, author ID, content, and posting timestamp.
+### Get user presence
 
-When the service receives this event, it updates the author's last activity timestamp and publishes PresenceUpdatedEvent.
-PresenceUpdatedEvent
-Contains the message ID, author ID, and last activity timestamp in UTC.
+`GET http://localhost:5001/api/presence/{userId}`
 
-The original message ID is preserved so downstream services can correlate events.
-Project structure
+Returns the user's last activity timestamp. Returns HTTP 404 if no activity is known for that user.
+
+## Events
+
+### MessagePostedEvent
+
+Contains the message ID, channel ID, author ID, content, and posting timestamp. The service uses this event to update the author's last-active timestamp.
+
+### PresenceUpdatedEvent
+
+Contains the message ID, author ID, and last-active timestamp in UTC. The original message ID is preserved so downstream services can correlate events.
+
+## Project structure
+
+```text
 apps/
   presence-microservice/
     src/
@@ -64,13 +72,25 @@ docs/
   design.md
 docker-compose.yml
 Bizcord.slnx
+README.md
+```
 
+## Build and test
 
-Build
+Build the solution:
+
+```powershell
 dotnet build Bizcord.slnx
+```
 
+Run the tests:
 
-Design notes
-The service uses asynchronous messaging to process posted-message events. The message client separates RabbitMQ communication from business logic. Shared contracts provide common event definitions.
+```powershell
+dotnet test Bizcord.slnx
+```
 
-The current prototype stores presence timestamps in memory. They are lost when the service restarts; persistent storage can be added in a future iteration.
+## Design notes
+
+The service uses asynchronous messaging to process posted-message events. The shared message client separates RabbitMQ communication from business logic, while Shared.Contracts defines the event models.
+
+**Current limitation:** Presence timestamps are stored in memory and are lost when the service restarts. Persistent storage is not implemented in this prototype.

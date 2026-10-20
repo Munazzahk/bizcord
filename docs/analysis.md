@@ -1,50 +1,50 @@
-# Analysis — Bizcord Presence Service
+﻿# Analysis — Bizcord Presence Service
 
 ## 1. Project overview
 
-Bizcord is a backend platform for real-time communication. It consists of multiple microservices, each responsible for a specific business domain.
-
-This project focuses on the Presence Service.
+Bizcord is a backend platform for real-time communication. This project implements the Presence Service, which tracks the last recorded activity of each user.
 
 ## 2. Domain responsibilities
 
-The Presence Service tracks when a user was last active.
+The Presence Service is responsible for:
 
-Its responsibilities are:
-- Store a user's latest activity timestamp.
-- Update activity when a user posts a message.
-- Provide an API for retrieving presence information.
+- Tracking a user's latest activity timestamp.
+- Updating activity when a user posts a message.
+- Exposing an API to retrieve presence information.
 
-The service does not manage messages, channels, or user profile information.
+It does not own messages, channels, or user profile information.
 
 ## 3. Service boundaries
+
+The wider Bizcord domain is divided into the following proposed services:
 
 - **Presence Service:** Owns presence information and last-active timestamps.
 - **Messaging Service:** Owns messages and publishes message-related events.
 - **Channel Management Service:** Owns channels and channel membership.
 - **User Profiles Service:** Owns user profile information.
 
-These are proposed service boundaries for this project.
+Only the Presence Service is implemented in this assignment.
 
 ## 4. Data ownership
 
-The Presence Service owns its presence data and is responsible for updating it.
+The Presence Service owns its presence state. In the current prototype, this state is stored in memory rather than a persistent database.
 
-Other services must not access the Presence Service's database directly. They communicate through its API or messages.
+Other services should not modify the Presence Service's state directly. Services communicate through REST endpoints or messages.
 
 ## 5. Service interactions
 
-When a message is posted, the Messaging Service publishes a `MessagePostedEvent`.
+When a message is posted, the Messaging Service publishes a `MessagePostedEvent` through RabbitMQ.
 
-The Presence Service consumes this event and updates the last-active timestamp for the message author.
+The Presence Service consumes the event, identifies the author, and updates the author's last-active timestamp. It then publishes a `PresenceUpdatedEvent` containing the original message ID, author ID, and timestamp.
 
-RabbitMQ is used for asynchronous messaging.
+The original message ID supports correlation with the message that triggered the update.
 
-## 6. Assumptions
+## 6. Assumptions and limitations
 
 - Each user has a unique identifier.
-- A message event identifies its author and when the message was posted.
-- Events are shared through a common contract.
-- The service should tolerate receiving the same event more than once.
-
-These assumptions must be checked against the course's shared contracts and workshop material.
+- A message event contains the author's ID and posting timestamp.
+- Event definitions are shared through the Shared.Contracts package.
+- RabbitMQ provides asynchronous communication.
+- The handler avoids moving a user's recorded activity backwards when an older event is received.
+- Presence data is currently in memory and is lost on restart.
+- The proposed boundaries for the other Bizcord services are analytical boundaries, not implemented services.
