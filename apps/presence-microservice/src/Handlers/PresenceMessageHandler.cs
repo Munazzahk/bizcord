@@ -4,7 +4,7 @@ using Shared.Contracts.Events;
 
 namespace PresenceMicroservice.Handlers;
 
-public sealed class PresenceMessageHandler : IMessageHandler<MessagePostedEvent>
+public sealed class PresenceMessageHandler : IMessageHandler<MessagePostedEvent> 
 {
     private readonly IMessageClient _messageClient;
 

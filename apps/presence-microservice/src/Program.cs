@@ -1,12 +1,13 @@
 using MessageClient;
-using PresenceMicroservice;
-using PresenceMicroservice.Handlers;
+using PresenceMicroservice; //Code to the actual service
+using PresenceMicroservice.Handlers; //Code that handles the message posted event
 
 var builder = WebApplication.CreateBuilder(args);
 
 var rabbitMqConnection =
     builder.Configuration["RabbitMQ:ConnectionString"] ?? "host=localhost";
 
+// Register the RabbitMqMessageClient - dependency injection
 builder.Services.AddSingleton<IMessageClient>(
     _ => new RabbitMqMessageClient(rabbitMqConnection));
 
